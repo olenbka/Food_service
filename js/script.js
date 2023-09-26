@@ -221,8 +221,47 @@ new MenuRang(
   "menu__item"
 ).render();
 
+const forms = document.querySelectorAll('form');
 
-         
+forms.forEach(item => {
+  postData(item);
+})
+
+const message = {
+  loading: "Loading",
+  sucess: "Your data has been sent successfully",
+  failure: "Error sending data"
+}
+
+function postData (form) {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const loadMessage = document.createElement('div');
+    loadMessage.textContent = message.loading;
+    form.append(loadMessage);
+
+    const request = new XMLHttpRequest();
+    request.open('POST', 'server.php');
+    //request.getResponseHeader('Content-type', 'multipart/form-data');
+
+    const formData = new FormData(form);
+    request.send(formData);
+
+    request.addEventListener('load', () => {
+      if (request.status === 200) {
+        console.log(request.response);
+        loadMessage.textContent = message.sucess;
+        form.reset();
+        setTimeout(() => {
+          loadMessage.remove();
+        }, 5000)
+      } else {
+        loadMessage.textContent = message.failure;
+      }
+    });       
+  });
+};
 });
 
 
