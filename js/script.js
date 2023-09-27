@@ -247,11 +247,16 @@ function postData (form) {
 
   
     const formData = new FormData(form);
+    const object = {};
+    formData.forEach((value, key) => {
+      object[key] = value;
+    })
 
     fetch('server.php', {
       method: 'POST',
-      body: formData
-    }).then(data => data.text())
+      body: JSON.stringify(object),
+      headers: 'Content-type: application/json'
+    }).then(data => data.json)
       .then(data => {
         console.log(data)
       showThanksModal(message.sucess)
