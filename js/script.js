@@ -188,51 +188,47 @@ class MenuRang {
   }
 }
 
-new MenuRang(
-  "img/tabs/vegy.jpg",
-  "vegy",
-  '"Fitness" menu',
-  'The "Fitness" menu is a new approach to cooking: more fresh vegetables and fruits. A product for active and healthy people. This is a completely new product with the best price and high quality!',
-  9,
-  '.menu .container',
-  "menu__item"
-).render();
+const getResources = async (url) => {
+  let res = await fetch(url);
+    if(!res.ok){
+      throw new Error(`Error`)
+    }
+  return await res.json();
+};
 
-
-new MenuRang(
-  "img/tabs/elite.jpg",
-  "luxe", 
-  '"Premium" menu',
-  'The In the "Premium" menu we use not only beautiful exellent packaging design, but also high-quality execution of dishes. Red fish, seafood, fruits - a restaurant menu without going to a restaurant!',
-  7,
-  '.menu .container',
-  "menu__item"
-).render();
-
-new MenuRang(
-  "img/tabs/post.jpg",
-  "post",
-  '"Lenten" menu',
-  'The "Lenten" menu is a careful selection of ingredients: a complete absence of animal products, milk from almonds, oats, coconut or buckwheat, the right amount of proteins from tofu and imported vegetarian steaks.',
-  8,
-  '.menu .container',
-  "menu__item"
-).render();
+getResources('http://localhost:3000/menu')
+.catch(data => {
+  data.forEach(({img, altimg, title, descr, price }) => {
+    new MenuRang (img, altimg, title, descr, price, '.menu .container').render();
+  });
+});
 
 //POST request
 const forms = document.querySelectorAll('form');
 
-forms.forEach(item => {
-  postData(item);
-})
-
 const message = {
   loading: './img/forms/spinner.svg',
-  sucess: "Your data has been sent successfully",
+  success: "Your data has been sent successfully",
   failure: "Error sending data"
 }
 
-function postData (form) {
+forms.forEach(item => {
+  bindPostData(item);
+})
+
+const postData = async (url, data) => {
+  let res = await fetch(url, {
+      method: "POST",
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: data
+  });
+
+  return await res.json();
+};
+
+function bindPostData (form) {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
   
@@ -244,31 +240,23 @@ function postData (form) {
       margin: 0 Auto;
     `;      
     form.insertAdjacentElement('afterend', loadMessage);
-
-  
+    
     const formData = new FormData(form);
-    const object = {};
-    formData.forEach((value, key) => {
-      object[key] = value;
-    })
+    const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-    fetch('server.php', {
-      method: 'POST',
-      body: JSON.stringify(object),
-      headers: 'Content-type: application/json'
-    }).then(data => data.json)
-      .then(data => {
-        console.log(data)
-      showThanksModal(message.sucess)
-      loadMessage.remove()
-    }).catch(() => {
-      showThanksModal(message.failure)
-    }).finally(() => {
-      form.reset()      
-    })        
-         
-  });
-};
+    postData('http://localhost:3000/requests', json)
+            .then(data => {
+                console.log(data);
+                showThanksModal(message.success);
+                loadMessage.remove();
+            }).catch((e) => {
+                console.log(e)
+                showThanksModal(message.failure);
+            }).finally(() => {
+                form.reset();
+            });
+        });
+    }
 
 function showThanksModal(message) {
   const prevModalDialog = document.querySelector('.modal__dialog');
@@ -285,14 +273,21 @@ function showThanksModal(message) {
         `;    
 
   document.querySelector('.modal').append(thanksModal);
+
+  openModal();
+
   setTimeout(() => {
     thanksModal.remove();
     prevModalDialog.classList.add('.show');
     prevModalDialog.classList.remove('.hide');
     closeModal();
   }, 4000);
-  openModal();
+  
 }
 
 });
+
+
+
+
 
