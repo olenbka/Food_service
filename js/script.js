@@ -188,20 +188,41 @@ class MenuRang {
   }
 }
 
-const getResources = async (url) => {
-  let res = await fetch(url);
-    if(!res.ok){
-      throw new Error(`Error`)
-    }
-  return await res.json();
-};
+// async function getResource(url) {
+//   try {
+//     let res = await fetch(url);
 
-getResources('http://localhost:3000/menu')
-.catch(data => {
-  data.forEach(({img, altimg, title, descr, price }) => {
-    new MenuRang (img, altimg, title, descr, price, '.menu .container').render();
+//     if (!res.ok) {
+//         throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+//     }
+
+//     return await res.json();
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }
+axios.get('http://localhost:3000/menu')
+.then(data => {
+  data.data.forEach(({img, altimg, title, descr, price}) => {
+      new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
   });
 });
+
+// getResource('http://localhost:3000/menu')
+//         .then(data => {
+//             data.forEach(({img, altimg, title, descr, price}) => {
+//                 new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
+//             });
+//         });
+
+// axios.get('http://localhost:3000/menu')
+// .then(data => {
+//   data.forEach(({img, altimg, title, descr, price }) => {
+//     new MenuRang (img, altimg, title, descr, price, '.menu .container').render();
+//   });
+// })
+
+
 
 //POST request
 const forms = document.querySelectorAll('form');
@@ -227,6 +248,8 @@ const postData = async (url, data) => {
 
   return await res.json();
 };
+
+
 
 function bindPostData (form) {
   form.addEventListener('submit', (e) => {
