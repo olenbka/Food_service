@@ -3,8 +3,8 @@ window.addEventListener('DOMContentLoaded', function() {
   // Tabs
   
 let tabs = document.querySelectorAll('.tabheader__item'),
-    tabsContent = document.querySelectorAll('.tabcontent'),
-    tabsParent = document.querySelector('.tabheader__items');
+  tabsContent = document.querySelectorAll('.tabcontent'),
+  tabsParent = document.querySelector('.tabheader__items');
 
 function hideTabContent() {
       
@@ -37,280 +37,289 @@ tabsParent.addEventListener('click', function(event) {
               }
           });
   }
-});
-
-  //Timer
-
-const deadline = '2023-12-31';
-
-function getTimeRemaining(endtime) {
-  const t = Date.parse(endtime) - Date.parse(new Date()),
-        days = Math.floor(t / (1000 * 60 * 60 * 24)),
-        hours = Math.floor(t / (1000 * 60 * 60) % 24),
-        minutes = Math.floor(t / (1000 * 60) % 60),
-        seconds = Math.floor(t / (1000) % 60);
-
-  return {
-    "total" : t,
-    "days" : days,
-    "hours" : hours,
-    "minutes" :minutes,
-    "seconds" : seconds
-  }      
-}
-
-function setZeroOnClock(num) {
-  if (num >=0 && num < 10) {
-    return `0${num}`;
-  } else {
-    return num
-  }
-}
-
-function setClock(selector, endtime) {
-  const timer = document.querySelector(selector),
-        days = timer.querySelector('#days'),
-        hours = timer.querySelector('#hours'),
-        minutes = timer.querySelector('#minutes'),
-        seconds = timer.querySelector('#seconds'),
-        timeInt = setInterval(updateClock, 1000);
-
-  updateClock(endtime);       
-
-  function updateClock () {
-    const t = getTimeRemaining(endtime);
-
-    days.innerHTML = setZeroOnClock(t.days),
-    hours.innerHTML = setZeroOnClock(t.hours),
-    minutes.innerHTML = setZeroOnClock(t.minutes),
-    seconds.innerHTML = setZeroOnClock(t.seconds);
-
-
-    if (t.total <= 0) {
-      clearInterval(timeInt);
-    }
-
-  }   
+  });
   
-}
-setClock('.timer', deadline);
+  // Timer
 
-//Modal
+  const deadline = '2023-12-31';
 
-const modal = document.querySelector('.modal'),
-      openModalBtn = document.querySelectorAll('[data-modal]');
- 
-function openModal() {
-  modal.classList.add('show');
-  modal.classList.remove('hide');
-  document.body.style.overflow = 'hidden';
-  clearInterval(modalTimerId);
-} 
+  function getTimeRemaining(endtime) {
+      const t = Date.parse(endtime) - Date.parse(new Date()),
+          days = Math.floor( (t/(1000*60*60*24)) ),
+          seconds = Math.floor( (t/1000) % 60 ),
+          minutes = Math.floor( (t/1000/60) % 60 ),
+          hours = Math.floor( (t/(1000*60*60) % 24) );
 
-openModalBtn.forEach(btn => {
-  btn.addEventListener('click', openModal)
-})
-
-function closeModal() {
-  modal.classList.add('hide'),
-  modal.classList.remove('show');
-
-  document.body.style.overflow = '';
-
-}
-
-
-modal.addEventListener('click', (e) => {
- if(e.target === modal || e.target.getAttribute('data-close') == '') {
-  closeModal();
- }  
-})  
-
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Escape'){
-    closeModal()
+      return {
+          'total': t,
+          'days': days,
+          'hours': hours,
+          'minutes': minutes,
+          'seconds': seconds
+      };
   }
-})
 
-//Modal by scroll, timeout
+  function getZero(num){
+      if (num >= 0 && num < 10) { 
+          return '0' + num;
+      } else {
+          return num;
+      }
+  }
 
-const modalTimerId = setTimeout(openModal, 3000);
+  function setClock(selector, endtime) {
 
-function showModalByScroll() {
-  if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
+      const timer = document.querySelector(selector),
+          days = timer.querySelector("#days"),
+          hours = timer.querySelector('#hours'),
+          minutes = timer.querySelector('#minutes'),
+          seconds = timer.querySelector('#seconds'),
+          timeInterval = setInterval(updateClock, 1000);
+
+      updateClock();
+
+      function updateClock() {
+          const t = getTimeRemaining(endtime);
+
+          days.innerHTML = getZero(t.days);
+          hours.innerHTML = getZero(t.hours);
+          minutes.innerHTML = getZero(t.minutes);
+          seconds.innerHTML = getZero(t.seconds);
+
+          if (t.total <= 0) {
+              clearInterval(timeInterval);
+          }
+      }
+  }
+
+  setClock('.timer', deadline);
+
+  // Modal
+
+  const modalTrigger = document.querySelectorAll('[data-modal]'),
+      modal = document.querySelector('.modal');
+
+  modalTrigger.forEach(btn => {
+      btn.addEventListener('click', openModal);
+  });
+
+  function closeModal() {
+      modal.classList.add('hide');
+      modal.classList.remove('show');
+      document.body.style.overflow = '';
+  }
+
+  function openModal() {
+      modal.classList.add('show');
+      modal.classList.remove('hide');
+      document.body.style.overflow = 'hidden';
+      clearInterval(modalTimerId);
+  }
+
+  modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.getAttribute('data-close') == "") {
+          closeModal();
+      }
+  });
+
+  document.addEventListener('keydown', (e) => {
+      if (e.code === "Escape" && modal.classList.contains('show')) { 
+          closeModal();
+      }
+  });
+
+  const modalTimerId = setTimeout(openModal, 300000);
+  
+
+  function showModalByScroll() {
+      if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
+          openModal();
+          window.removeEventListener('scroll', showModalByScroll);
+      }
+  }
+  window.addEventListener('scroll', showModalByScroll);
+
+
+  class MenuCard {
+      constructor(src, alt, title, descr, price, parentSelector, ...classes) {
+          this.src = src;
+          this.alt = alt;
+          this.title = title;
+          this.descr = descr;
+          this.price = price;
+          this.classes = classes;
+          this.parent = document.querySelector(parentSelector);
+          this.transfer = 1,5;
+          this.changeToUSD(); 
+      }
+
+      changeToUSD() {
+          this.price = this.price * this.transfer; 
+      }
+
+      render() {
+          const element = document.createElement('div');
+
+          if (this.classes.length === 0) {
+              this.classes = "menu__item";
+              element.classList.add(this.classes);
+          } else {
+              this.classes.forEach(className => element.classList.add(className));
+          }
+
+          element.innerHTML = `
+              <img src=${this.src} alt=${this.alt}>
+              <h3 class="menu__item-subtitle">${this.title}</h3>
+              <div class="menu__item-descr">${this.descr}</div>
+              <div class="menu__item-divider"></div>
+              <div class="menu__item-price">
+                  <div class="menu__item-cost">Price:</div>
+                  <div class="menu__item-total"><span>${this.price}</span> usd/day</div>
+              </div>
+          `;
+          this.parent.append(element);
+      }
+  }
+
+  getResource('http://localhost:3000/menu')
+      .then(data => {
+          data.forEach(({img, altimg, title, descr, price}) => {
+              new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
+          });
+      });
+
+  // Forms
+
+  const forms = document.querySelectorAll('form');
+  const message = {
+      loading: 'img/form/spinner.svg',
+      success: 'Thank you! We will contact you soon',
+      failure: 'Something went wrong...'
+  };
+
+  forms.forEach(item => {
+      bindPostData(item);
+  });
+
+  const postData = async (url, data) => {
+      let res = await fetch(url, {
+          method: "POST",
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: data
+      });
+  
+      return await res.json();
+  };
+
+  async function getResource(url) {
+      let res = await fetch(url);
+  
+      if (!res.ok) {
+          throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+      }
+  
+      return await res.json();
+  }
+
+  function bindPostData(form) {
+      form.addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          let statusMessage = document.createElement('img');
+          statusMessage.src = message.loading;
+          statusMessage.style.cssText = `
+              display: block;
+              margin: 0 auto;
+          `;
+          form.insertAdjacentElement('afterend', statusMessage);
+      
+          const formData = new FormData(form);
+
+          const json = JSON.stringify(Object.fromEntries(formData.entries()));
+
+          postData('http://localhost:3000/requests', json)
+          .then(data => {
+              console.log(data);
+              showThanksModal(message.success);
+              statusMessage.remove();
+          }).catch(() => {
+              showThanksModal(message.failure);
+          }).finally(() => {
+              form.reset();
+          });
+      });
+  }
+
+  function showThanksModal(message) {
+      const prevModalDialog = document.querySelector('.modal__dialog');
+
+      prevModalDialog.classList.add('hide');
       openModal();
-      window.removeEventListener('scroll', showModalByScroll);
-  }
-}
-window.addEventListener('scroll', showModalByScroll);
 
-//Menu rang
-
-class MenuRang {
-  constructor(src, alt, title, descr, price, parentSelector, ...classes) {
-    this.src = src;
-    this.alt = alt;
-    this.title = title;
-    this.descr = descr;
-    this.classes = classes,
-    this.price = price;
-    this.parent = document.querySelector(parentSelector);
-    this.course = 1.5;
-    this.changeToUSD();
-
+      const thanksModal = document.createElement('div');
+      thanksModal.classList.add('modal__dialog');
+      thanksModal.innerHTML = `
+          <div class="modal__content">
+              <div class="modal__close" data-close>×</div>
+              <div class="modal__title">${message}</div>
+          </div>
+      `;
+      document.querySelector('.modal').append(thanksModal);
+      setTimeout(() => {
+          thanksModal.remove();
+          prevModalDialog.classList.add('show');
+          prevModalDialog.classList.remove('hide');
+          closeModal();
+      }, 4000);
   }
 
-  changeToUSD (){
-    this.price = this.price * this.course;
+  // Slider
+
+  let slideIndex = 1;
+  const slides = document.querySelectorAll('.offer__slide'),
+      prev = document.querySelector('.offer__slider-prev'),
+      next = document.querySelector('.offer__slider-next'),
+      total = document.querySelector('#total'),
+      current = document.querySelector('#current');
+
+  showSlides(slideIndex);
+
+  if (slides.length < 10){
+    total.textContent = `0${slides.length}`;
+  } else {
+    total.textContent = slides.length;
   }
 
-  render() {
-    const element = document.createElement('div');
-    if (this.classes.length === 0){
-      this.element = "menu__item";
-      element.classList.add('menu__item');
-    } else this.classes.forEach(className => { 
-      element.classList.add(className);
-    })
-    
-    element.innerHTML = `
-      <img src=${this.src} alt=${this.alt}>
-      <h3 class="menu__item-subtitle">${this.title}</h3>
-      <div class="menu__item-descr">${this.descr}</div>
-      <div class="menu__item-divider"></div>
-      <div class="menu__item-price">
-        <div class="menu__item-cost">Price:</div>
-        <div class="menu__item-total"><span>${this.price}</span> dollars/day</div>
-      </div>
-    `;
-    this.parent.append(element);
+  function showSlides(n) {
+      if (n > slides.length) {
+          slideIndex = 1;
+      }
+      if (n < 1) {
+          slideIndex = slides.length;
+      }
 
+      slides.forEach((item) => item.style.display = 'none');
+
+      slides[slideIndex - 1].style.display = 'block'; 
+      
+      if (slides.length < 10) {
+          current.textContent =  `0${slideIndex}`;
+      } else {
+          current.textContent =  slideIndex;
+      }
   }
-}
 
-// async function getResource(url) {
-//   try {
-//     let res = await fetch(url);
+  function plusSlides (n) {
+      showSlides(slideIndex += n);
+  }
 
-//     if (!res.ok) {
-//         throw new Error(`Could not fetch ${url}, status: ${res.status}`);
-//     }
-
-//     return await res.json();
-//   } catch (error) {
-//     console.log(error)
-//   }
-// }
-axios.get('http://localhost:3000/menu')
-.then(data => {
-  data.data.forEach(({img, altimg, title, descr, price}) => {
-      new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
-  });
-});
-
-// getResource('http://localhost:3000/menu')
-//         .then(data => {
-//             data.forEach(({img, altimg, title, descr, price}) => {
-//                 new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
-//             });
-//         });
-
-// axios.get('http://localhost:3000/menu')
-// .then(data => {
-//   data.forEach(({img, altimg, title, descr, price }) => {
-//     new MenuRang (img, altimg, title, descr, price, '.menu .container').render();
-//   });
-// })
-
-
-
-//POST request
-const forms = document.querySelectorAll('form');
-
-const message = {
-  loading: './img/forms/spinner.svg',
-  success: "Your data has been sent successfully",
-  failure: "Error sending data"
-}
-
-forms.forEach(item => {
-  bindPostData(item);
-})
-
-const postData = async (url, data) => {
-  let res = await fetch(url, {
-      method: "POST",
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: data
+  prev.addEventListener('click', function(){
+    plusSlides (-1);
   });
 
-  return await res.json();
-};
-
-
-
-function bindPostData (form) {
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-  
-
-    const loadMessage = document.createElement('img');
-    loadMessage.src = message.loading;
-    loadMessage.style.cssText = `
-      display: block;
-      margin: 0 Auto;
-    `;      
-    form.insertAdjacentElement('afterend', loadMessage);
-    
-    const formData = new FormData(form);
-    const json = JSON.stringify(Object.fromEntries(formData.entries()));
-
-    postData('http://localhost:3000/requests', json)
-            .then(data => {
-                console.log(data);
-                showThanksModal(message.success);
-                loadMessage.remove();
-            }).catch((e) => {
-                console.log(e)
-                showThanksModal(message.failure);
-            }).finally(() => {
-                form.reset();
-            });
-        });
-    }
-
-function showThanksModal(message) {
-  const prevModalDialog = document.querySelector('.modal__dialog');
-  prevModalDialog.classList.add('hide');
-  
-
-  const thanksModal = document.createElement('div');
-        thanksModal.classList.add('modal__dialog');
-        thanksModal.innerHTML = `
-            <div class="modal__content">
-                <div class="modal__close" data-close>×</div>
-                <div class="modal__title">${message}</div>
-            </div>
-        `;    
-
-  document.querySelector('.modal').append(thanksModal);
-
-  openModal();
-
-  setTimeout(() => {
-    thanksModal.remove();
-    prevModalDialog.classList.add('.show');
-    prevModalDialog.classList.remove('.hide');
-    closeModal();
-  }, 4000);
-  
-}
-
+  next.addEventListener('click', function(){
+    plusSlides (1);
+  });
 });
-
-
-
-
-
